@@ -42,18 +42,18 @@ internal sealed class LockedItemsTab : ITab
 
     public void Draw()
     {
-        using var tab = ImRaii.TabItem("Locked Items###TabLockedItems");
+        using var tab = ImRaii.TabItem(L.Text(LKey.LockedItemsTab));
         if (!tab)
             return;
         bool checkPerCharacter = _configuration.ConfigUiOptions.CheckGatheredItemsPerCharacter;
-        if (ImGui.Checkbox("Group by character", ref checkPerCharacter))
+        if (ImGui.Checkbox(L.Text(LKey.GroupByCharacter), ref checkPerCharacter))
         {
             _configuration.ConfigUiOptions.CheckGatheredItemsPerCharacter = checkPerCharacter;
             _configWindow.ShouldSave();
         }
 
         bool onlyShowMissing = _configuration.ConfigUiOptions.OnlyShowMissingGatheredItems;
-        if (ImGui.Checkbox("Only show missing items", ref onlyShowMissing))
+        if (ImGui.Checkbox(L.Text(LKey.OnlyMissing), ref onlyShowMissing))
         {
             _configuration.ConfigUiOptions.OnlyShowMissingGatheredItems = onlyShowMissing;
             _configWindow.ShouldSave();

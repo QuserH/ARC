@@ -83,11 +83,11 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
         _clientState.TerritoryChanged += TerritoryChanged;
         _commandManager.AddHandler("/arcontrol", new CommandInfo(ProcessCommand)
         {
-            HelpMessage = "Manage retainers",
+            HelpMessage = L.Text(LKey.ManageRetainers),
         });
         _commandManager.AddHandler("/arc", new CommandInfo(ProcessCommand)
         {
-            HelpMessage = "Alias of /arcontrol",
+            HelpMessage = L.Text(LKey.CommandAlias),
         });
 
         if (_autoRetainerApi.Ready)
@@ -99,8 +99,7 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
             catch (Exception e)
             {
                 _pluginLog.Error(e, "Unable to sync characters");
-                _chatGui.PrintError(
-                    "Unable to synchronize characters with AutoRetainer, plugin might not work properly.");
+                _chatGui.PrintError(L.Text(LKey.SyncFailed));
             }
         }
     }
@@ -303,22 +302,22 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
             new SeString(new UIForegroundPayload(579))
                 .Append(SeIconChar.Collectible.ToIconString())
                 .Append(new UIForegroundPayload(0))
-                .Append($" Sending retainer ")
+                .Append(L.Text(LKey.AssigningVenturePrefix))
                 .Append(new UIForegroundPayload(1))
                 .Append(retainerName)
                 .Append(new UIForegroundPayload(0))
-                .Append(" to collect ")
+                .Append(L.Text(LKey.AssigningVentureMiddle))
                 .Append(new UIForegroundPayload(1))
                 .Append($"{reward.Quantity}x ")
                 .Append(new ItemPayload(venture.ItemId))
                 .Append(venture.Name)
                 .Append(RawPayload.LinkTerminator)
                 .Append(new UIForegroundPayload(0))
-                .Append(" for ")
+                .Append(L.Text(LKey.AssigningVentureFor))
                 .Append(new UIForegroundPayload(1))
                 .Append($"{list.Name} {list.GetIcon()}")
                 .Append(new UIForegroundPayload(0))
-                .Append("."));
+                .Append(L.Text(LKey.SentenceEnd)));
         _pluginLog.Information(
             $"Setting AR to use venture {venture.RowId}, which should retrieve {reward.Quantity}x {venture.Name}");
     }
@@ -329,15 +328,15 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
             new SeString(new UIForegroundPayload(579))
                 .Append(SeIconChar.Collectible.ToIconString())
                 .Append(new UIForegroundPayload(0))
-                .Append($" No tasks left for retainer ")
+                .Append(L.Text(LKey.NoTasksPrefix))
                 .Append(new UIForegroundPayload(1))
                 .Append(retainerName)
                 .Append(new UIForegroundPayload(0))
-                .Append(", sending to ")
+                .Append(L.Text(LKey.NoTasksMiddle))
                 .Append(new UIForegroundPayload(1))
-                .Append("Quick Venture")
+                .Append(L.Text(LKey.QuickVenture))
                 .Append(new UIForegroundPayload(0))
-                .Append("."));
+                .Append(L.Text(LKey.SentenceEnd)));
         _pluginLog.Information($"No tasks left (previous venture = {retainer.LastVenture}), using QV");
     }
 
@@ -391,12 +390,12 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
         ImGui.Text(SeIconChar.Collectible.ToIconString());
         if (ImGui.IsItemHovered())
         {
-            string text = "This retainer is managed by ARC.";
+            string text = L.Text(LKey.ManagedByArc);
 
             if (characterConfiguration.Type == Configuration.CharacterType.PartOfCharacterGroup)
             {
                 var group = _configuration.CharacterGroups.Single(x => x.Id == characterConfiguration.CharacterGroupId);
-                text += $"\n\nCharacter Group: {group.Name}";
+                text += $"\n\n{L.Text(LKey.CharacterGroupValue, group.Name)}";
             }
 
             ImGui.SetTooltip(text);
@@ -414,7 +413,7 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
             var ch = _configuration.Characters.SingleOrDefault(x => x.LocalContentId == _playerState.ContentId);
             if (ch == null || ch.Type == Configuration.CharacterType.NotManaged || ch.Retainers.Count == 0)
             {
-                _chatGui.PrintError("No character to debug.");
+                _chatGui.PrintError(L.Text(LKey.NoCharacterToDebug));
                 return;
             }
 
@@ -431,20 +430,20 @@ public sealed partial class AutoRetainerControlPlugin : IDalamudPlugin
             if (retainerName == null)
             {
                 if (s.Length > 1)
-                    _chatGui.PrintError($"Could not find retainer {s[1]}.");
+                    _chatGui.PrintError(L.Text(LKey.RetainerNotFoundNamed, s[1]));
                 else
-                    _chatGui.PrintError("Could not find retainer.");
+                    _chatGui.PrintError(L.Text(LKey.RetainerNotFound));
                 return;
             }
 
             var venture = GetNextVenture(retainerName, true);
             if (venture == QuickVentureId)
-                _chatGui.Print($"Next venture for {retainerName} is Quick Venture.");
+                _chatGui.Print(L.Text(LKey.NextVentureQuick, retainerName));
             else if (venture.HasValue)
-                _chatGui.Print(
-                    $"Next venture for {retainerName} is {_gameCache.Ventures.First(x => x.RowId == venture.Value).Name}.");
+                _chatGui.Print(L.Text(LKey.NextVentureItem, retainerName,
+                    _gameCache.Ventures.First(x => x.RowId == venture.Value).Name));
             else
-                _chatGui.Print($"Next venture for {retainerName} is (none).");
+                _chatGui.Print(L.Text(LKey.NextVentureNone, retainerName));
         }
         else
             _configWindow.Toggle();

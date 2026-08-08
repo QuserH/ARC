@@ -24,10 +24,10 @@ namespace ARControl.Windows.Config;
 
 internal sealed class VentureListTab : ITab
 {
-    private static readonly string[] StockingTypeLabels = ["Collect Once", "Keep in Stock"];
+    private static readonly string[] StockingTypeLabels = [L.Text(LKey.CollectOnce), L.Text(LKey.KeepInStock)];
 
     private static readonly string[] PriorityLabels =
-        { "Collect in order of the list", "Collect item with lowest inventory first" };
+        { L.Text(LKey.PriorityInOrder), L.Text(LKey.PriorityBalanced) };
 
     private static readonly Regex CountAndName = new(@"^(\d{1,5})x?\s+(.*)$", RegexOptions.Compiled);
     private const FontAwesomeIcon WarningIcon = FontAwesomeIcon.ExclamationCircle;
@@ -66,7 +66,7 @@ internal sealed class VentureListTab : ITab
 
     public void Draw()
     {
-        using var tab = ImRaii.TabItem("Venture Lists###TabVentureLists");
+        using var tab = ImRaii.TabItem(L.Text(LKey.VentureListsTab));
         if (!tab)
             return;
 
@@ -134,7 +134,7 @@ internal sealed class VentureListTab : ITab
                                              list.Priority == temporaryConfig.ListPriority &&
                                              list.CheckRetainerInventory ==
                                              temporaryConfig.CheckRetainerInventory));
-            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, "Save");
+            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, L.Text(LKey.Save));
             ImGui.EndDisabled();
 
             if (save && canSave)
@@ -160,7 +160,7 @@ internal sealed class VentureListTab : ITab
             {
                 ImGui.SameLine();
                 ImGui.BeginDisabled(assignedCharacters.Count > 0 || assignedGroups.Count > 0);
-                if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Times, "Delete"))
+                if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Times, L.Text(LKey.Delete)))
                 {
                     listToDelete = list;
                     ImGui.CloseCurrentPopup();
@@ -171,8 +171,8 @@ internal sealed class VentureListTab : ITab
                     ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text(
-                        $"Remove this list from the {assignedCharacters.Count} character(s) and {assignedGroups.Count} group(s) using it before deleting it.");
+                    ImGui.Text(L.Text(LKey.RemoveListBeforeDelete, assignedCharacters.Count,
+                        assignedGroups.Count));
                     foreach (var character in assignedCharacters)
                         ImGui.BulletText($"{character.CharacterName} @ {character.WorldName}");
                     foreach (var group in assignedGroups)
@@ -207,15 +207,14 @@ internal sealed class VentureListTab : ITab
             var venture = ventures.First();
 
             if (itemsToDiscard.Contains(venture.ItemId))
-                DrawWarning(WarningIcon, "This item will be automatically discarded by 'Discard Helper'.");
+                DrawWarning(WarningIcon, L.Text(LKey.DiscardHelperWarning));
             else if (item.ItemId is >= 2 and <= 13 && item.RemainingQuantity >= 10000)
             {
                 if (list.Type == Configuration.ListType.CollectOneTime || list.CheckRetainerInventory)
-                    DrawWarning(ExcessCrystalsIcon,
-                        "You are responsible for manually moving shards or crystals to your retainers - ARC won't do that for you.\nIf you don't, this may lead to wasted ventures.",
+                    DrawWarning(ExcessCrystalsIcon, L.Text(LKey.CrystalTransferWarning),
                         ImGuiColors.ParsedBlue);
                 else
-                    DrawWarning(WarningIcon, "You can never have this many of a shard or crystal in your inventory.");
+                    DrawWarning(WarningIcon, L.Text(LKey.CrystalCapWarning));
             }
 
             var icon = _textureProvider.GetFromGameIcon(new GameIconLookup(venture.IconId));
@@ -224,7 +223,7 @@ internal sealed class VentureListTab : ITab
 
             ImGui.SetNextItemWidth(130 * ImGuiHelpers.GlobalScale);
             int quantity = item.RemainingQuantity;
-            if (ImGui.InputInt($"{venture.Name} ({string.Join(" ", ventures.Select(x => x.CategoryType.ToString()))})",
+            if (ImGui.InputInt($"{venture.Name} ({string.Join(" ", ventures.Select(x => L.VentureCategory(x.CategoryType)))})",
                     ref quantity, 100))
             {
                 item.RemainingQuantity = quantity;
@@ -342,7 +341,7 @@ internal sealed class VentureListTab : ITab
 
     private void DrawNewVentureList()
     {
-        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Plus, "Add Venture List"))
+        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Plus, L.Text(LKey.AddVentureList)))
             ImGui.OpenPopup("##AddList");
 
         if (ImGui.BeginPopup("##AddList"))
@@ -350,7 +349,7 @@ internal sealed class VentureListTab : ITab
             (bool save, bool canSave) = DrawVentureListEditor(_newList, null);
 
             ImGui.BeginDisabled(!canSave);
-            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, "Save");
+            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, L.Text(LKey.Save));
             ImGui.EndDisabled();
 
             if (save && canSave)
@@ -385,7 +384,7 @@ internal sealed class VentureListTab : ITab
     {
         ImGui.SetNextItemWidth(375 * ImGuiHelpers.GlobalScale);
         string listName = temporaryConfig.Name;
-        bool save = ImGui.InputTextWithHint("", "List Name...", ref listName, 64,
+        bool save = ImGui.InputTextWithHint("", L.Text(LKey.ListNameHint), ref listName, 64,
             ImGuiInputTextFlags.EnterReturnsTrue);
         bool canSave = IsValidListName(listName, list);
         temporaryConfig.Name = listName;
@@ -413,7 +412,7 @@ internal sealed class VentureListTab : ITab
 
             ImGui.PushID($"CheckRetainerInventory{list?.Id ?? Guid.Empty}");
             bool checkRetainerInventory = temporaryConfig.CheckRetainerInventory;
-            if (ImGui.Checkbox("Check Retainer Inventory for items (requires AllaganTools)",
+            if (ImGui.Checkbox(L.Text(LKey.CheckRetainerInventory),
                     ref checkRetainerInventory))
                 temporaryConfig.CheckRetainerInventory = checkRetainerInventory;
             ImGui.PopID();
@@ -425,11 +424,11 @@ internal sealed class VentureListTab : ITab
     private void DrawVentureListItemFilter(Configuration.ItemList list)
     {
         ImGuiEx.SetNextItemFullWidth();
-        if (ImGui.BeginCombo($"##VentureSelection{list.Id}", "Add Venture...", ImGuiComboFlags.HeightLarge))
+        if (ImGui.BeginCombo($"##VentureSelection{list.Id}", L.Text(LKey.AddVentureHint), ImGuiComboFlags.HeightLarge))
         {
             ImGuiEx.SetNextItemFullWidth();
 
-            bool addFirst = ImGui.InputTextWithHint("", "Filter...", ref _searchString, 256,
+            bool addFirst = ImGui.InputTextWithHint("", L.Text(LKey.FilterHint), ref _searchString, 256,
                 ImGuiInputTextFlags.AutoSelectAll | ImGuiInputTextFlags.EnterReturnsTrue);
 
             int quantity;
@@ -455,7 +454,7 @@ internal sealed class VentureListTab : ITab
                          .Select(x => new
                          {
                              Venture = x.First(),
-                             CategoryNames = x.Select(y => y.CategoryType.ToString())
+                             CategoryNames = x.Select(y => L.VentureCategory(y.CategoryType))
                          }))
             {
                 var icon = _textureProvider.GetFromGameIcon(new GameIconLookup(filtered.Venture.IconId));
@@ -500,7 +499,7 @@ internal sealed class VentureListTab : ITab
     private void ImportFromClipboardButton(Configuration.ItemList list, List<Configuration.QueuedItem> clipboardItems)
     {
         ImGui.BeginDisabled(clipboardItems.Count == 0);
-        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Download, "Import from Clipboard"))
+        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Download, L.Text(LKey.ImportClipboard)))
         {
             _pluginLog.Information($"Importing {clipboardItems.Count} clipboard items");
             foreach (var item in clipboardItems)
@@ -520,11 +519,11 @@ internal sealed class VentureListTab : ITab
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Supports importing a list in a Teamcraft-compatible format.");
+            ImGui.Text(L.Text(LKey.TeamcraftImportHelp));
             ImGui.Spacing();
             if (clipboardItems.Count > 0)
             {
-                ImGui.Text("Clicking this button now would add the following items:");
+                ImGui.Text(L.Text(LKey.ImportPreview));
                 ImGui.Indent();
                 foreach (var item in clipboardItems)
                     ImGui.TextUnformatted(
@@ -533,10 +532,10 @@ internal sealed class VentureListTab : ITab
             }
             else
             {
-                ImGui.Text("For example:");
+                ImGui.Text(L.Text(LKey.ForExample));
                 ImGui.Indent();
-                ImGui.Text("2000x Cobalt Ore");
-                ImGui.Text("1000x Gold Ore");
+                ImGui.Text(L.Text(LKey.ExampleCobaltOre));
+                ImGui.Text(L.Text(LKey.ExampleGoldOre));
                 ImGui.Unindent();
             }
 
@@ -550,7 +549,7 @@ internal sealed class VentureListTab : ITab
         {
             ImGui.SameLine();
             ImGui.BeginDisabled(list.Items.All(x => x.RemainingQuantity > 0));
-            if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Check, "Remove all finished items"))
+            if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Check, L.Text(LKey.RemoveFinished)))
             {
                 list.Items.RemoveAll(q => q.RemainingQuantity <= 0);
                 _configWindow.ShouldSave();

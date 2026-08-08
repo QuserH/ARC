@@ -18,33 +18,32 @@ internal sealed class MiscTab : ITab
 
     public void Draw()
     {
-        using var tab = ImRaii.TabItem("Misc###TabMisc");
+        using var tab = ImRaii.TabItem(L.Text(LKey.MiscTab));
         if (!tab)
             return;
 
-        ImGui.Text("Venture Settings");
+        ImGui.Text(L.Text(LKey.VentureSettings));
         ImGui.Spacing();
 
         ImGui.SetNextItemWidth(130);
         int venturesToKeep = _configuration.Misc.VenturesToKeep;
-        if (ImGui.InputInt("Minimum Ventures needed to assign retainers", ref venturesToKeep))
+        if (ImGui.InputInt(L.Text(LKey.MinimumVentures), ref venturesToKeep))
         {
             _configuration.Misc.VenturesToKeep = Math.Max(0, Math.Min(65000, venturesToKeep));
             _configWindow.ShouldSave();
         }
 
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker(
-            $"If you have less than {venturesToKeep} ventures, retainers will only be sent out for Quick Ventures (instead of picking the next item from the Venture List).");
+        ImGuiComponents.HelpMarker(L.Text(LKey.MinimumVenturesHelp, venturesToKeep));
 
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
 
-        ImGui.Text("User Interface Settings");
+        ImGui.Text(L.Text(LKey.UiSettings));
 
         bool showAssignmentChatMessages = _configuration.ConfigUiOptions.ShowAssignmentChatMessages;
-        if (ImGui.Checkbox("Show chat message when assigning a venture to a retainer",
+        if (ImGui.Checkbox(L.Text(LKey.ShowAssignmentChat),
                 ref showAssignmentChatMessages))
         {
             _configuration.ConfigUiOptions.ShowAssignmentChatMessages = showAssignmentChatMessages;
@@ -52,7 +51,7 @@ internal sealed class MiscTab : ITab
         }
 
         bool showContents = _configuration.ConfigUiOptions.ShowVentureListContents;
-        if (ImGui.Checkbox("Show Venture List preview in Groups/Retainer tabs", ref showContents))
+        if (ImGui.Checkbox(L.Text(LKey.ShowListPreview), ref showContents))
         {
             _configuration.ConfigUiOptions.ShowVentureListContents = showContents;
             _configWindow.ShouldSave();

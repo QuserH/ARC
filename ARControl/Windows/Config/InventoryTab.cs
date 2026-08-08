@@ -34,7 +34,7 @@ internal sealed class InventoryTab : ITab
 
     public void Draw()
     {
-        using var tab = ImRaii.TabItem("Inventory###TabInventory");
+        using var tab = ImRaii.TabItem(L.Text(LKey.InventoryTab));
         if (!tab)
         {
             _listAsTrees = null;
@@ -45,12 +45,12 @@ internal sealed class InventoryTab : ITab
         if (_listAsTrees == null)
             RefreshInventory();
 
-        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Redo, "Refresh"))
+        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Redo, L.Text(LKey.Refresh)))
             RefreshInventory();
 
         if (_lastUpdate != null)
         {
-            string text = $"Last Update: {_lastUpdate:t}";
+            string text = L.Text(LKey.LastUpdate, _lastUpdate.Value);
             ImGui.SameLine();
 
             ImGui.SameLine(ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(text).X + ImGui.GetCursorPosX());
@@ -62,7 +62,7 @@ internal sealed class InventoryTab : ITab
 
         if (_listAsTrees == null || _listAsTrees.Count == 0)
         {
-            ImGui.Text("No items in inventory. Do you have AllaganTools installed?");
+            ImGui.Text(L.Text(LKey.NoInventoryItems));
             return;
         }
 
@@ -75,7 +75,7 @@ internal sealed class InventoryTab : ITab
                 var rootNode = _listAsTrees.FirstOrDefault(x => x.Id == list.Id.ToString());
                 if (rootNode == null || rootNode.Children.Count == 0)
                 {
-                    ImGui.Text("This list is empty.");
+                    ImGui.Text(L.Text(LKey.EmptyList));
                     continue;
                 }
 
@@ -159,7 +159,7 @@ internal sealed class InventoryTab : ITab
 
                             if (list.CheckRetainerInventory)
                             {
-                                characterNode.AddChild("Self", "In Inventory",
+                                characterNode.AddChild("Self", L.Text(LKey.InInventory),
                                     character.CountItems(item.ItemId, false));
 
                                 foreach (var retainer in character.Retainers)

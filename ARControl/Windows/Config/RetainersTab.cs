@@ -29,7 +29,7 @@ internal sealed class RetainersTab : ITab
 
     public void Draw()
     {
-        using var tab = ImRaii.TabItem("Retainers###TabRetainers");
+        using var tab = ImRaii.TabItem(L.Text(LKey.RetainersTab));
         if (!tab)
             return;
 
@@ -80,7 +80,7 @@ internal sealed class RetainersTab : ITab
                     ImGui.Indent(_configWindow.MainIndentSize);
 
                     List<(Guid Id, string Name)> groups =
-                        new List<(Guid Id, string Name)> { (Guid.Empty, "No Group (manually assign lists)") }
+                        new List<(Guid Id, string Name)> { (Guid.Empty, L.Text(LKey.NoGroupManual)) }
                             .Concat(_configuration.CharacterGroups.Select(x => (x.Id, x.Name)))
                             .ToList();
 
@@ -107,14 +107,14 @@ internal sealed class RetainersTab : ITab
 
     private void DrawVentureListTab(Configuration.CharacterConfiguration character, List<(Guid Id, string Name)> groups)
     {
-        using var tab = ImRaii.TabItem("Venture Lists");
+        using var tab = ImRaii.TabItem(L.Text(LKey.VentureLists));
         if (!tab)
             return;
 
         int groupIndex = 0;
         if (character.Type == Configuration.CharacterType.PartOfCharacterGroup)
             groupIndex = groups.FindIndex(x => x.Id == character.CharacterGroupId);
-        if (ImGui.Combo("Character Group", ref groupIndex, groups.Select(x => x.Name).ToArray(),
+        if (ImGui.Combo(L.Text(LKey.CharacterGroup), ref groupIndex, groups.Select(x => x.Name).ToArray(),
                 groups.Count))
         {
             if (groupIndex == 0)
@@ -142,7 +142,7 @@ internal sealed class RetainersTab : ITab
         }
         else
         {
-            ImGui.TextWrapped($"Retainers will participate in the following lists:");
+            ImGui.TextWrapped(L.Text(LKey.RetainersParticipate));
             ImGui.Indent(_configWindow.MainIndentSize);
 
             var group = _configuration.CharacterGroups.Single(
@@ -159,7 +159,7 @@ internal sealed class RetainersTab : ITab
                     ImGui.BulletText($"{list.Name}");
             }
             else
-                ImGui.TextColored(ImGuiColors.DalamudRed, "(None)");
+                ImGui.TextColored(ImGuiColors.DalamudRed, L.Text(LKey.None));
 
             ImGui.Unindent(_configWindow.MainIndentSize);
             ImGui.Spacing();
@@ -168,7 +168,7 @@ internal sealed class RetainersTab : ITab
 
     private void DrawCharacterRetainersTab(Configuration.CharacterConfiguration character)
     {
-        using var tab = ImRaii.TabItem("Retainers");
+        using var tab = ImRaii.TabItem(L.Text(LKey.Retainers));
         if (!tab)
             return;
 

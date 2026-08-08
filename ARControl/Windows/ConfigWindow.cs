@@ -42,7 +42,7 @@ internal sealed class ConfigWindow : LWindow
         DiscardHelperIpc discardHelperIpc,
         AllaganToolsIpc allaganToolsIpc,
         IPluginLog pluginLog)
-        : base($"ARC {SeIconChar.Collectible.ToIconString()}###ARControlConfig")
+        : base($"{L.Text(LKey.ConfigWindowTitle)} {SeIconChar.Collectible.ToIconString()}###ARControlConfig")
     {
         _pluginInterface = pluginInterface;
         _configuration = configuration;
@@ -169,7 +169,7 @@ internal sealed class ConfigWindow : LWindow
                 if (selectedLists.Take(i).Any(x => x == listId))
                 {
                     ImGui.Indent(MainIndentSize);
-                    ImGui.TextColored(ImGuiColors.DalamudYellow, "This entry is a duplicate and will be ignored.");
+                    ImGui.TextColored(ImGuiColors.DalamudYellow, L.Text(LKey.DuplicateIgnored));
                     ImGui.Unindent(MainIndentSize);
                 }
                 else if (_configuration.ConfigUiOptions.ShowVentureListContents)
@@ -177,8 +177,8 @@ internal sealed class ConfigWindow : LWindow
                     var list = itemLists[listIndex].List;
                     ImGui.Indent(MainIndentSize);
                     ImGui.Text(list.Type == Configuration.ListType.CollectOneTime
-                        ? "Items on this list will be collected once."
-                        : "Items on this list will be kept in stock on each character.");
+                        ? L.Text(LKey.CollectOncePreview)
+                        : L.Text(LKey.KeepStockedPreview));
                     ImGui.Spacing();
                     foreach (var item in list.Items)
                     {
@@ -236,7 +236,7 @@ internal sealed class ConfigWindow : LWindow
 
         var unusedLists = itemLists.Where(x => x.Id != Guid.Empty && !selectedLists.Contains(x.Id)).ToList();
         ImGui.BeginDisabled(unusedLists.Count == 0);
-        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Plus, "Add Venture List to this Group"))
+        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Plus, L.Text(LKey.AddListToGroup)))
             ImGui.OpenPopup($"##AddItem{id}");
 
         if (ImGui.BeginPopupContextItem($"##AddItem{id}", ImGuiPopupFlags.NoOpenOverItems))

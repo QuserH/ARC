@@ -25,7 +25,7 @@ internal sealed class CharacterGroupTab : ITab
 
     public void Draw()
     {
-        using var tab = ImRaii.TabItem("Groups###TabGroups");
+        using var tab = ImRaii.TabItem(L.Text(LKey.GroupsTab));
         if (!tab)
             return;
 
@@ -76,7 +76,7 @@ internal sealed class CharacterGroupTab : ITab
             (bool save, bool canSave) = DrawGroupEditor(temporaryConfig, group);
 
             ImGui.BeginDisabled(!canSave || group.Name == temporaryConfig.Name);
-            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, "Save");
+            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, L.Text(LKey.Save));
             ImGui.EndDisabled();
 
             if (save && canSave)
@@ -90,7 +90,7 @@ internal sealed class CharacterGroupTab : ITab
             {
                 ImGui.SameLine();
                 ImGui.BeginDisabled(assignedCharacters.Count > 0);
-                if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Times, "Delete"))
+                if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Times, L.Text(LKey.Delete)))
                 {
                     groupToDelete = group;
                     ImGui.CloseCurrentPopup();
@@ -100,8 +100,7 @@ internal sealed class CharacterGroupTab : ITab
                 if (assignedCharacters.Count > 0 && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                 {
                     ImGui.BeginTooltip();
-                    ImGui.Text(
-                        $"Remove the {assignedCharacters.Count} character(s) from this group before deleting it.");
+                    ImGui.Text(L.Text(LKey.RemoveCharactersBeforeGroupDelete, assignedCharacters.Count));
                     foreach (var character in assignedCharacters)
                         ImGui.BulletText($"{character.CharacterName} @ {character.WorldName}");
                     ImGui.EndTooltip();
@@ -115,9 +114,9 @@ internal sealed class CharacterGroupTab : ITab
     private void DrawCharacterGroup(Configuration.CharacterGroup group,
         List<Configuration.CharacterConfiguration> assignedCharacters)
     {
-        string countLabel = assignedCharacters.Count == 0 ? "no characters"
-            : assignedCharacters.Count == 1 ? "1 character"
-            : $"{assignedCharacters.Count} characters";
+        string countLabel = assignedCharacters.Count == 0 ? L.Text(LKey.NoCharacters)
+            : assignedCharacters.Count == 1 ? L.Text(LKey.OneCharacter)
+            : L.Text(LKey.ManyCharacters, assignedCharacters.Count);
         if (ImGui.CollapsingHeader($"{group.Name} ({countLabel})"))
         {
             ImGui.Indent(_configWindow.MainIndentSize);
@@ -125,17 +124,17 @@ internal sealed class CharacterGroupTab : ITab
             {
                 if (tabBar)
                 {
-                    using (var ventureListTab = ImRaii.TabItem("Venture Lists"))
+                    using (var ventureListTab = ImRaii.TabItem(L.Text(LKey.VentureLists)))
                     {
                         if (ventureListTab)
                             _configWindow.DrawVentureListSelection(group.Id.ToString(), group.ItemListIds);
                     }
 
-                    using (var charactersTab = ImRaii.TabItem("Characters"))
+                    using (var charactersTab = ImRaii.TabItem(L.Text(LKey.Characters)))
                     {
                         if (charactersTab)
                         {
-                            ImGui.Text("Characters in this group:");
+                            ImGui.Text(L.Text(LKey.CharactersInGroup));
                             ImGui.Indent(_configWindow.MainIndentSize);
                             foreach (var character in assignedCharacters.OrderBy(x => x.WorldName)
                                          .ThenBy(x => x.LocalContentId))
@@ -152,7 +151,7 @@ internal sealed class CharacterGroupTab : ITab
 
     private void DrawNewCharacterGroup()
     {
-        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Plus, "Add Group"))
+        if (ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Plus, L.Text(LKey.AddGroup)))
             ImGui.OpenPopup("##AddGroup");
 
         if (ImGui.BeginPopup("##AddGroup"))
@@ -160,7 +159,7 @@ internal sealed class CharacterGroupTab : ITab
             (bool save, bool canSave) = DrawGroupEditor(_newGroup, null);
 
             ImGui.BeginDisabled(!canSave);
-            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, "Save");
+            save |= ImGuiComponents.IconButtonWithText(FontAwesomeIcon.Save, L.Text(LKey.Save));
             ImGui.EndDisabled();
 
             if (save && canSave)
@@ -186,7 +185,7 @@ internal sealed class CharacterGroupTab : ITab
         Configuration.CharacterGroup? existingGroup)
     {
         string name = group.Name;
-        bool save = ImGui.InputTextWithHint("", "Group Name...", ref name, 64, ImGuiInputTextFlags.EnterReturnsTrue);
+        bool save = ImGui.InputTextWithHint("", L.Text(LKey.GroupNameHint), ref name, 64, ImGuiInputTextFlags.EnterReturnsTrue);
         bool canSave = IsValidGroupName(name, existingGroup);
 
         group.Name = name;

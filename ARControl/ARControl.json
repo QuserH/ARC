@@ -1,8 +1,8 @@
 {
   "Name": "ARC",
   "Author": "zbee, Liza Carvelli",
-  "Punchline": "Better AutoRetainer Venture Planner",
-  "Description": "Instead of manually managing retainer plans for each individual character,\nwhich can get fairly tedious fairly quickly, we optimize this a bit and\nonly manage \"high-level\" plans.",
+  "Punchline": "更便捷的 AutoRetainer 探险委托规划工具",
+  "Description": "无需再为每个角色逐一管理雇员探险计划。ARC 将繁琐的重复操作简化为统一的高级计划管理，让多角色雇员派遣更加轻松。",
   "RepoUrl": "https://github.com/zbee/ARC",
   "IconUrl": "https://raw.githubusercontent.com/zbee/ARC/master/ARControl.png"
 }
