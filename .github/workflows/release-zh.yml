@@ -1,0 +1,77 @@
+name: release-zh
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [zh-cn-translation]
+    paths-ignore: ['README.md']
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Dalamud
+        uses: Blooym/setup-dalamud@v1
+        with:
+          branch: release
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build and package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          dotnet restore ARControl.sln --nologo -v q
+          dotnet build ARControl.sln -c Release --nologo -v q --no-restore "/p:DalamudLibPath=$env:DALAMUD_HOME\\"
+
+          [xml]$project = Get-Content ARControl/ARControl.csproj
+          $version = $project.Project.PropertyGroup.Version | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($version)) { throw 'ARControl version was not found.' }
+          $output = "ARControl/dist/ARControl"
+          $sourceZip = Join-Path $output "ARControl-$version.zip"
+          if (-not (Test-Path $sourceZip)) { throw "Missing package $sourceZip" }
+          $zip = "ARControl-$version-zh.zip"
+          Copy-Item $sourceZip $zip -Force
+          "PLUGIN_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "PLUGIN_ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "RELEASE_TAG=zh-v$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ARC zh-CN ${{ env.PLUGIN_VERSION }}
+          target_commitish: ${{ github.sha }}
+          files: ${{ env.PLUGIN_ZIP }}
+          generate_release_notes: true
+
+      - name: Notify zh-repo
+        shell: bash
+        env:
+          ZH_REPO_TOKEN: ${{ secrets.ZH_REPO_TOKEN }}
+          PLUGIN_VERSION: ${{ env.PLUGIN_VERSION }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+        run: |
+          if [ -z "$ZH_REPO_TOKEN" ]; then
+            echo "::error::Missing repository secret ZH_REPO_TOKEN."
+            exit 1
+          fi
+          status=$(curl --silent --show-error --output response.json --write-out "%{http_code}" -X POST \
+            -H "Authorization: Bearer $ZH_REPO_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/QuserH/zh-repo/dispatches \
+            -d "{\"event_type\":\"publish-plugin\",\"client_payload\":{\"internal_name\":\"ARControl\",\"version\":\"$PLUGIN_VERSION\",\"download_url\":\"https://github.com/QuserH/ARC/releases/download/$RELEASE_TAG/ARControl-$PLUGIN_VERSION-zh.zip\",\"repo_url\":\"https://github.com/QuserH/ARC\"}}")
+          if [ "$status" != "204" ]; then
+            cat response.json
+            echo "::error::zh-repo publish dispatch failed with HTTP $status. ZH_REPO_TOKEN needs access to QuserH/zh-repo."
+            exit 1
+          fi
